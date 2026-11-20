@@ -2,12 +2,14 @@ from telebot import types
 from loader import bot
 from states import UserRegistration
 from database import search_user, registration_user
+from .menu import menu_handler
 
 @bot.message_handler(commands=['start'])
 async def start_handler(message):
     user_id = message.from_user.id
 
     if await search_user(user_id):
+        await menu_handler(message)
         return
 
     await bot.set_state(user_id, UserRegistration.wait_name, message.chat.id)
