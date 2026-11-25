@@ -3,3 +3,4 @@ from . import menu
 from . import add_games
 from . import game_statistic
 from . import settings
+from . import about
