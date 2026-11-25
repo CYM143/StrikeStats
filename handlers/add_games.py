@@ -2,9 +2,10 @@ from telebot import types
 from loader import bot
 from states import UserAddGame
 from datetime import date, timedelta, datetime
-from database import save_game
+from database import save_game, load_user_message_id
 from .inline_keyboards import create_inline_kb
-from .menu import menu_handler
+from .menu import back_to_menu_handler
+import asyncio
 
 CLUBS = {
     'panda': 'Панда',
@@ -69,6 +70,9 @@ async def game_date_callback_handler(callback):
 async def game_date_enter_handler(message):
     user_id = message.from_user.id
     chat_id = message.chat.id
+
+    msg_id = load_user_message_id(user_id)
+
     form = ("%d-%m-%Y", "%d.%m.%Y")
     game_date = None
 
@@ -80,7 +84,7 @@ async def game_date_enter_handler(message):
             continue
 
     if game_date is None: # Если данные корректны - продолжаем
-        await bot.send_message(user_id, 'Ошибка !\nВводите корректное время и в формате ДД-ММ-ГГГГ')
+        await bot.edit_message_text('Ошибка !\nВводите корректное время и в формате ДД-ММ-ГГГГ', chat_id, msg_id)
         return
 
     async with bot.retrieve_data(user_id, chat_id) as data: # Сохраняем данные о дате
@@ -95,19 +99,19 @@ async def game_date_enter_handler(message):
         'Свой вариант..': 'game_club_mine'
     })
 
-    await bot.send_message(user_id, 'В каком клубе была игра ?', reply_markup=markup)
+    await bot.edit_message_text('В каком клубе была игра ?', chat_id, msg_id, reply_markup=markup)
+    await bot.delete_message(chat_id, message.message_id)
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('game_club_')) # Выбор КЛУБА по нажатию кнопки
 async def game_club_set_handler(callback):
     choose = callback.data.split('game_club_')[-1]
     user_id = callback.from_user.id
     chat_id = callback.message.chat.id
-    msg_id = callback.message.message_id
 
     if choose == 'mine': # Если выбрали свой вариант переходим к вводу
         await bot.set_state(user_id, UserAddGame.wait_club, chat_id)
 
-        await bot.edit_message_text('Введите ваш клуб..', user_id, msg_id)
+        await bot.edit_message_text('Введите ваш клуб..', user_id, callback.message.message_id)
 
         return
 
@@ -120,13 +124,15 @@ async def game_club_set_handler(callback):
             'Закрытая': 'game_type_close'
         })
 
-        await bot.edit_message_text('Выберите тип игры:', user_id, msg_id, reply_markup=markup)
+        await bot.edit_message_text('Выберите тип игры:', user_id, callback.message.message_id, reply_markup=markup)
 
 @bot.message_handler(state=UserAddGame.wait_club, content_types=['text']) # Шаг для ввода своего КЛУБА
 async def game_club_choose(message):
     user_id = message.from_user.id
     chat_id = message.chat.id
     club = message.text
+
+    msg_id = await load_user_message_id(user_id)
 
     async with bot.retrieve_data(user_id, chat_id) as data:
         data['club'] = club
@@ -138,7 +144,8 @@ async def game_club_choose(message):
         'Закрытая': 'game_type_close'
     })
     
-    await bot.send_message(user_id, 'Выберите тип игры:', reply_markup=markup)
+    await bot.edit_message_text('Выберите тип игры:', chat_id, msg_id, reply_markup=markup)
+    await bot.delete_message(chat_id, message.message_id)
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('game_type_')) # Выбор ТИПА ИГРЫ по нажатию кнопки
 async def game_type_set_handler(callback):
@@ -156,4 +163,5 @@ async def game_type_set_handler(callback):
 
     # Сообщаем о успешном сохранении и возвращаемся в меню
     await bot.edit_message_text('Сохранено !', user_id, callback.message.message_id)
-    await menu_handler(callback.message)
+    await asyncio.sleep(5)
+    await back_to_menu_handler(callback)

@@ -1,15 +1,15 @@
 from loader import bot
 from telebot import types
 from .inline_keyboards import create_inline_kb_to_menu
-from database import get_user_games
+from database import get_user_games, load_user_message_id
 from collections import Counter
 
 def get_statistic(games: tuple):
     if not games:
         return None
     
-    types_count = Counter(game[4] for game in games)
-    clubs = (Counter(game[3] for game in games)).most_common()
+    types_count = Counter(game[3] for game in games)
+    clubs = (Counter(game[2] for game in games)).most_common()
 
     return {
         'total_games': len(games),
@@ -17,18 +17,22 @@ def get_statistic(games: tuple):
         'close_games': types_count['Закрытая'],
         'clubs': clubs,
         'favorite_club': clubs[0],
-        'last_date': games[-1][2]
+        'last_date': games[-1][1]
     }
 
 @bot.callback_query_handler(func=lambda callback: callback.data == 'game_statistic')
 async def games_statistic_handler(callback):
     user_id = callback.from_user.id
+    chat_id = callback.message.chat.id
 
     games = await get_user_games(user_id)
     data = get_statistic(games)
 
+    msg_id = await load_user_message_id(user_id)
+
     if data is None:
-        await bot.edit_message_text('У вас ешё нет добавленных игр, добавтьте их через главное меню !', user_id, callback.message.message_id)
+        markup = create_inline_kb_to_menu()
+        await bot.edit_message_text('У вас ешё нет добавленных игр, добавтьте их через главное меню !', chat_id, msg_id, reply_markup=markup)
         return
 
     clubs_list = "\n".join(f" - {club}: {count}" for club, count in data['clubs'])
@@ -48,4 +52,4 @@ async def games_statistic_handler(callback):
 """
     markup = create_inline_kb_to_menu()
 
-    await bot.edit_message_text(msg, user_id, callback.message.message_id, parse_mode='HTML', reply_markup=markup)
+    await bot.edit_message_text(msg, chat_id, msg_id, parse_mode='HTML', reply_markup=markup)
