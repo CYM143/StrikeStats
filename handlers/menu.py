@@ -7,6 +7,7 @@ from .inline_keyboards import create_inline_kb
 async def menu_handler(message):
     user_id = message.chat.id
     user_id, user_name, user_call = await get_user_info(user_id)
+    await bot.delete_state(user_id, user_id)
 
     welcome_msg = f"{user_name}, c возвращением !\nДобро пожаловать в главное меню, выберите действие..."
 
@@ -18,3 +19,7 @@ async def menu_handler(message):
     })
 
     await bot.send_message(user_id, welcome_msg, reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda callback: callback.data == 'back_to_menu')
+async def back_to_menu_handler(callback):
+    await menu_handler(callback.message)

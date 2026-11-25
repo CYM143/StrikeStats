@@ -8,3 +8,8 @@ def create_inline_kb(buttons: dict, row_width: int = 1) -> types.InlineKeyboardM
     ]
     markup.add(*kb_buttons)
     return markup
+
+def create_inline_kb_to_menu() -> types.InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton('Назад в меню', callback_data='back_to_menu'))
+    return markup

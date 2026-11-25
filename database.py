@@ -35,3 +35,9 @@ async def save_game(user_id: int, game_date: str, club: str, game_type: str) -> 
 
         await db.execute('INSERT INTO games (number, user_id, date, club, type) VALUES (?, ?, ?, ?, ?)', (next_num, user_id, game_date, club, game_type))
         await db.commit()
+
+async def get_user_games(user_id: int) -> tuple:
+    async with aiosqlite.connect(db_name) as db:
+        async with db.execute('SELECT * FROM games WHERE user_id = ?', (user_id, )) as cursor:
+            row = await cursor.fetchall()
+            return list(row)
