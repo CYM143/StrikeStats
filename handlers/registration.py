@@ -1,4 +1,3 @@
-from telebot import types
 from loader import bot
 from states import UserRegistration
 from database import search_user, registration_user, save_user_message_id, load_user_message_id

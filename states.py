@@ -8,3 +8,7 @@ class UserAddGame(StatesGroup):
     wait_date = State()
     wait_club = State()
     wait = State()
+
+class UserChangeData(StatesGroup):
+    wait_name = State()
+    wait_call = State()

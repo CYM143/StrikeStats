@@ -22,6 +22,16 @@ async def registration_user(user_id: int, user_name: str, user_call: str) -> Non
         await db.execute('INSERT INTO users (user_id, name, call) VALUES (?, ?, ?)', (user_id, user_name, user_call))
         await db.commit()
 
+async def change_name_user(user_id: int, new_name: str) -> None:
+    async with aiosqlite.connect(db_name) as db:
+        await db.execute('UPDATE users SET name = ? WHERE user_id = ?', (new_name, user_id))
+        await db.commit()
+
+async def change_call_user(user_id: int, new_call: str) -> None:
+    async with aiosqlite.connect(db_name) as db:
+        await db.execute('UPDATE users SET call = ? WHERE user_id = ?', (new_call, user_id))
+        await db.commit()
+
 async def get_user_info(user_id: int) -> tuple:
     async with aiosqlite.connect(db_name) as db:
         async with db.execute('SELECT * FROM users WHERE user_id=?', (user_id, )) as cursor:

@@ -46,6 +46,8 @@ async def back_to_menu_handler(callback):
     user_id = callback.from_user.id
     chat_id = callback.message.chat.id
 
+    await bot.delete_state(user_id, chat_id)
+
     welcome_msg, markup = await build_main_menu(user_id, chat_id)
 
     await bot.edit_message_text(welcome_msg, chat_id, callback.message.message_id, reply_markup=markup)
