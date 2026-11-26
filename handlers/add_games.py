@@ -71,7 +71,7 @@ async def game_date_enter_handler(message):
     user_id = message.from_user.id
     chat_id = message.chat.id
 
-    msg_id = load_user_message_id(user_id)
+    msg_id = await load_user_message_id(user_id)
 
     form = ("%d-%m-%Y", "%d.%m.%Y")
     game_date = None
