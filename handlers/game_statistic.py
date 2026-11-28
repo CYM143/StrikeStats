@@ -1,8 +1,8 @@
 from loader import bot
-from telebot import types
 from .inline_keyboards import create_inline_kb_to_menu
 from database import get_user_games, load_user_message_id
 from collections import Counter
+from logger import logger
 
 def get_statistic(games: tuple):
     if not games:
@@ -51,5 +51,7 @@ async def games_statistic_handler(callback):
 Дата последней игры - {data['last_date']}
 """
     markup = create_inline_kb_to_menu()
+
+    logger.info("Request to statistic")
 
     await bot.edit_message_text(msg, chat_id, msg_id, parse_mode='HTML', reply_markup=markup)

@@ -1,4 +1,3 @@
-from telebot import types
 from loader import bot
 from database import get_user_info, load_user_message_id, remove_user_message_id, save_user_message_id
 from .inline_keyboards import create_inline_kb

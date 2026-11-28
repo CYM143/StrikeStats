@@ -1,8 +1,10 @@
 # Dir's
 __pycache__
 venv
+logs
 
 # Files
 .env
-database.db
+*.db
 .DS_Store
+*.log

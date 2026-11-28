@@ -1,4 +1,3 @@
-from telebot import types
 from loader import bot
 from states import UserAddGame
 from datetime import date, timedelta, datetime
@@ -6,6 +5,7 @@ from database import save_game, load_user_message_id
 from .inline_keyboards import create_inline_kb
 from .menu import back_to_menu_handler
 import asyncio
+from logger import logger
 
 CLUBS = {
     'panda': 'Панда',
@@ -159,6 +159,7 @@ async def game_type_set_handler(callback):
 
     await bot.delete_state(user_id, chat_id) # Убираем статус ожидания чего-либо
 
+    logger.info("Saved new game")
     await save_game(user_id, game_date, club, game_type) # Сохраняем все данные
 
     # Сообщаем о успешном сохранении и возвращаемся в меню

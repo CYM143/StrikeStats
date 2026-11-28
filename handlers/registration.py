@@ -3,6 +3,7 @@ from states import UserRegistration
 from database import search_user, registration_user, save_user_message_id, load_user_message_id
 from .menu import menu_handler, menu_command_handler
 import asyncio
+from logger import logger
 
 @bot.message_handler(commands=['start'])
 async def start_handler(message):
@@ -44,6 +45,7 @@ async def get_name_handler(message):
         call = message.text
 
     await registration_user(user_id, name, call)
+    logger.info("New user register succesful")
     await bot.delete_state(user_id, user_id)
     await bot.delete_message(chat_id, message.message_id)
     await bot.edit_message_text(f'{name}, поздравляю с успешной регистрацией !\nТеперь вы можете вносить список своих игр =)', chat_id, msg_id)
